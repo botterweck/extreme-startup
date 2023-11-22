@@ -1,0 +1,37 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Run Maven tests
+        run: mvn test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Deploying to Heroku ..."
+      - run: echo "HEROKU_APP_NAME = ${{vars.HEROKU_APP_NAME}}"
+      - run: echo "HEROKU_EMAIL = ${{vars.HEROKU_EMAIL}}"
+
+      - uses: actions/checkout@v2
+      - uses: akhileshns/heroku-deploy@v3.12.14
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: ${{vars.HEROKU_APP_NAME}} #Must be unique in Heroku
+          heroku_email: ${{vars.HEROKU_EMAIL}}
